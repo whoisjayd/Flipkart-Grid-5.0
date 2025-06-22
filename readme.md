@@ -1,100 +1,140 @@
+# Flipkart GRID 5.0 - Robotics Challenge
 
+![visitor badge](https://visitor-badge.laobi.icu/badge?page_id=whoisjayd.Flipkart-Grid-5.0)
+[![Python 3.7+](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/release/python-370/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green.svg)
+![YOLO](https://img.shields.io/badge/YOLO-v5-blueviolet.svg)
 
-# Flipkart Grid 5.0 - Robotics Challenge at IIT Madras
+This repository contains the complete codebase developed by our team for the **Flipkart Grid 5.0 Robotics Challenge Finals**, held at IIT Madras. The project demonstrates a sophisticated robotic arm system capable of identifying, picking, and placing objects using advanced computer vision and robotics techniques.
 
-## Overview
+## Table of Contents
 
-This repository contains the code developed for the Flipkart Grid 5.0 competition, held at IIT Madras, where our team was selected for the finals. The project involves robotic manipulation and object detection using a combination of computer vision, inverse kinematics, and motor control.
+- [Project Overview](#project-overview)
+- [System Architecture](#system-architecture)
+- [Features](#features)
+- [Hardware & Software Stack](#hardware--software-stack)
+- [Installation](#installation)
+- [Usage](#usage)
+- [State Machine](#state-machine)
+- [License and Permissions](#license-and-permissions)
+- [Meet the Team](#meet-the-team)
+- [Acknowledgments](#acknowledgments)
+- [Contact](#contact)
 
-## Project Description
+## Project Overview
 
-The project showcases a robot capable of picking up objects, processing them, and placing them in designated zones. The robot uses multiple camera feeds for object detection, and the inverse kinematics calculations enable precise motor control for object manipulation.
+The core of this project is a fully autonomous robotic arm that performs complex pick-and-place operations. The system uses an Intel RealSense camera to perceive the environment in 3D, detects target objects using a custom-trained YOLO model, and calculates the precise movements required to grasp the object using inverse kinematics. Once an object is secured, the robot uses feeds from multiple ESP32 cameras to identify the correct drop-off zone, completing the task with high precision and efficiency.
+
+## System Architecture
+
+The robot's workflow is orchestrated as a finite state machine, ensuring robust and sequential execution of tasks.
+
+1.  **Object Detection**: The primary RealSense camera scans the workspace. A YOLOv5 model running on the video feed detects and localizes potential objects ("boxes").
+2.  **3D Coordinate Mapping**: For each detected object, the system uses the camera's depth sensor to calculate its real-world 3D coordinates (X, Y, Z).
+3.  **Inverse Kinematics**: The 3D coordinates of the closest object are fed into the inverse kinematics algorithm, which calculates the required rotation angles for each of the arm's joints.
+4.  **Motor Control**: The calculated joint angles are sent to an Arduino via serial communication, which drives the motors to move the arm and pick up the object.
+5.  **QR Code Verification**: After picking up an object, the arm moves to a designated scanning position. Two ESP32 cameras are used to detect a QR code that determines the final drop zone. This is handled with multithreading to process both camera feeds simultaneously.
+6.  **Placing the Object**: Based on the detected QR code, the arm moves to the corresponding drop zone and releases the object. The system then returns to its initial state to look for new objects.
 
 ## Features
 
-- **Inverse Kinematics**: Calculates the angles for robotic arm joints to reach a specific point in 3D space.
-- **Object Detection**: Utilizes custom-trained models for detecting and localizing objects.
-- **Motor Control**: Communicates with an Arduino to control the robotic arm's motors.
-- **Multi-Threading**: Manages multiple camera feeds concurrently for real-time object detection.
+-   **Real-time 3D Object Detection**: Utilizes a custom-trained YOLOv5 model with an Intel RealSense depth camera to detect and locate objects in 3D space.
+-   **Precise Robotic Arm Control**: Implements a robust inverse kinematics model to translate 3D world coordinates into accurate joint angles for the robotic arm.
+-   **Multi-threaded Camera Handling**: Concurrently processes video streams from two ESP32 cameras to efficiently detect QR codes for sorting tasks.
+-   **Arduino-based Motor Control**: Seamless serial communication with an Arduino board for low-level control of the arm's servo motors and gripper.
+-   **State-Machine Logic**: A clear and robust state-driven architecture ensures reliable and sequential operation of the robotic tasks.
 
-## Requirements
+## Hardware & Software Stack
 
-- Python 3.7+
-- OpenCV
-- NumPy
-- Queue
-- Arduino communication library
-- ESP32 camera module
+### Hardware
+* Custom-built Robotic Arm
+* Intel® RealSense™ Depth Camera
+* ESP32-CAM Modules (x2)
+* Arduino Mega/Uno for motor control
+* Servo Motors & Gripper Mechanism
+
+### Key Software/Libraries
+* **Python 3.7+**
+* **OpenCV**: For image processing and camera handling.
+* **Ultralytics YOLOv5**: For deep learning-based object detection.
+* **pyrealsense2**: Official SDK for Intel RealSense cameras.
+* **pyserial**: For communication with the Arduino.
+* **numpy**: For numerical operations and calculations.
 
 ## Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/WhoIsJayD/Flipkart-Grid-5.0
-   cd Flipkart-Grid-5.0
-   ```
+1.  **Clone the Repository**
+    ```bash
+    git clone [https://github.com/whoisjayd/Flipkart-Grid-5.0.git](https://github.com/whoisjayd/Flipkart-Grid-5.0.git)
+    cd Flipkart-Grid-5.0
+    ```
 
-2. Install the required Python packages:
-   ```bash
-   pip install -r requirements.txt
-   ```
+2.  **Set up Python Environment**
+    It is recommended to use a virtual environment.
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
 
-3. Ensure the Arduino and ESP32 camera modules are connected and configured correctly.
+3.  **Install Dependencies**
+    Install all the required packages from the `requirements.txt` file.
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Hardware Setup**
+    -   Connect the Intel RealSense camera to a USB 3.0 port.
+    -   Connect the Arduino to the computer via USB. Ensure the correct `COM` port is specified in `arduino_communication.py`.
+    -   Power on the ESP32 cameras and ensure they are connected to the same network. Update their IP addresses in `simulation.py`.
 
 ## Usage
 
-1. **Inverse Kinematics Calculation**:
-   The `inverse_kinematics` function calculates the necessary angles for the robotic arm joints to reach a specific point (x, y, z).
-
-2. **Object Detection**:
-   The `perform_object_detection` function initiates object detection using multiple camera feeds. It runs for a specified duration or until a QR code is detected.
-
-3. **Motor Control**:
-   The `write_motor_poses` function sends calculated motor positions to the Arduino and ensures the command is executed.
-
-4. **Main Loop**:
-   The `main` function orchestrates the robot's state machine, transitioning through various states like initializing, picking up objects, and placing them in designated zones.
-
-To run the project, execute the main script:
+To run the main robotic operation script, execute the `main.py` file.
 
 ```bash
 python main.py
-```
+````
+
+The script will initialize the cameras and the robotic arm, and then enter the main state-driven loop to begin the pick-and-place task.
 
 ## State Machine
 
-The robot operates in several states:
-- **INITIALIZING**: Sets the robot to the initial pose.
-- **PICKING_UP**: Moves the robotic arm to pick up an object.
-- **PROCESSING_PAUSED**: Pauses processing to analyze detected objects.
-- **PICKED_UP**: Confirms the object is picked up and calculates new poses.
-- **PICK_UP_PICKED**: Adjusts the arm for object placement.
-- **DROP_ZONE_PICKED**: Moves the arm to the drop zone.
-- **ESP_POSE_PICKED**: Positions the arm for ESP32 camera detection.
+The robot operates based on the following states defined in `simulation.py`:
+
+  - `INITIALIZING`: Sets the robot to its default home position.
+  - `PICKING_UP`: Moves the arm to a predefined observation pose to scan for objects.
+  - `PROCESSING_PAUSED`: Pauses the arm while the camera detects objects and identifies the closest one.
+  - `PICKED_UP`: Calculates the inverse kinematics for the target and moves to pick it up.
+  - `PICK_UP_PICKED`: Confirms the object is picked and moves to a safe height.
+  - `DROP_ZONE_PICKED`: Moves the arm to a general drop area.
+  - `ESP_POSE_PICKED`: Moves the object in front of the ESP32 cameras to scan for a QR code, which determines the final placement.
 
 ## License and Permissions
 
-This code is made publicly available for reference purposes in my resume. You are free to refer to it, but you may not use or modify the code without explicit permission.
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
-## Contact
+The code in this repository is made publicly available for demonstration and reference purposes. You are free to review and learn from it. However, you may not use, copy, or modify the code for other competitions or commercial purposes without explicit prior permission from the author.
 
-For any inquiries or permissions, please contact:
+## Meet the Team
 
-- **Name**: Jaydeep Solanki
-- **Email**: jaydeep.solankee@yahoo.com
-- **LinkedIn**: https://www.linkedin.com/in/jaydeep-solanki-79ab61253/
+We are a group of passionate engineering students from the Institute of Technology, Nirma University, Ahmedabad.
 
-## Team Members
-
-- **[Jaydeep Solanki](https://www.linkedin.com/in/jaydeep-solanki-79ab61253/)** (EC, Nirma University)
-- **[Vivek Samani](https://www.linkedin.com/in/vivek-samani-0957a127a/)** (EC, Nirma University)
-- **[Satyam Rana](https://www.linkedin.com/in/satyam-rana-690692256/)** (EC, Nirma University)
-- **[Sneh Shah](https://www.linkedin.com/in/sneh-shah-b8177828a/)** (EC, Nirma University)
-- **[Ameya Kale](https://www.linkedin.com/in/ameya-kale-5228a8257/)** (EI, Nirma University)
-- **[Keshav Vyas](https://www.linkedin.com/in/keshav-vyas-b194b4259/)** (EE, Nirma University)
-
-We are students from [Institute of Technology, Nirma University, Ahmedabad](https://nirmauni.ac.in).
+  - **[Jaydeep Solanki](https://www.linkedin.com/in/solanki-jaydeep)** (EC)
+  - **[Vivek Samani](https://www.linkedin.com/in/vivek-samani-0957a127a/)** (EC)
+  - **[Satyam Rana](https://www.linkedin.com/in/satyam-rana-690692256/)** (EC)
+  - **[Sneh Shah](https://www.linkedin.com/in/sneh-shah-b8177828a/)** (EC)
+  - **[Ameya Kale](https://www.linkedin.com/in/ameya-kale-5228a8257/)** (EI)
+  - **[Keshav Vyas](https://www.linkedin.com/in/keshav-vyas-b194b4259/)** (EE)
 
 ## Acknowledgments
 
-We would like to thank Flipkart for organizing the Flipkart Grid 5.0 competition and providing this opportunity to showcase our skills.
+We extend our sincere gratitude to **Flipkart** for organizing the Flipkart GRID 5.0 competition. It was an incredible platform that allowed us to apply our skills to a real-world robotics challenge and learn immensely throughout the process.
+
+## Contact
+
+For any inquiries, permissions, or collaborations, please feel free to reach out:
+
+  - **Name**: Jaydeep Solanki
+  - **Email**: [jaydeep.solankee@yahoo.com](mailto:contactjaydeepsolanki@gmail.com)
+  - **LinkedIn**: [linkedin.com/in/jaydeep-solanki-79ab61253](https://www.linkedin.com/in/solanki-jaydeep)
