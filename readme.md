@@ -136,5 +136,5 @@ We extend our sincere gratitude to **Flipkart** for organizing the Flipkart GRID
 For any inquiries, permissions, or collaborations, please feel free to reach out:
 
   - **Name**: Jaydeep Solanki
-  - **Email**: [jaydeep.solankee@yahoo.com](mailto:contactjaydeepsolanki@gmail.com)
+  - **Email**: [contactjaydeepsolanki@gmail.com](mailto:contactjaydeepsolanki@gmail.com)
   - **LinkedIn**: [linkedin.com/in/jaydeep-solanki-79ab61253](https://www.linkedin.com/in/solanki-jaydeep)
